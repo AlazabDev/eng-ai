@@ -33,6 +33,8 @@ import SpeechStudio from "./pages/SpeechStudio";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
+const UserOnly = ({ children }: { children: React.ReactNode }) => <ProtectedRoute>{children}</ProtectedRoute>;
+const AdminOnly = ({ children }: { children: React.ReactNode }) => <ProtectedRoute requireAdmin>{children}</ProtectedRoute>;
 
 const App = () => (
   <ErrorBoundary>
