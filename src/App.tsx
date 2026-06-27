@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import Index from "./pages/Index";
 import Integrations from "./pages/Integrations";
 import Analytics from "./pages/Analytics";
@@ -27,17 +29,22 @@ import FinanceModule from "./pages/finance/FinanceModule";
 import ContractsGenerator from "./pages/tools/ContractsGenerator";
 import SmartReports from "./pages/tools/SmartReports";
 import TaskBoard from "./pages/tools/TaskBoard";
+import SpeechStudio from "./pages/SpeechStudio";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
+const UserOnly = ({ children }: { children: React.ReactNode }) => <ProtectedRoute>{children}</ProtectedRoute>;
+const AdminOnly = ({ children }: { children: React.ReactNode }) => <ProtectedRoute requireAdmin>{children}</ProtectedRoute>;
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
+  <ErrorBoundary>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+          <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/integrations" element={<ProtectedRoute><Integrations /></ProtectedRoute>} />
@@ -65,11 +72,14 @@ const App = () => (
           <Route path="/tools/contracts" element={<ProtectedRoute><ContractsGenerator /></ProtectedRoute>} />
           <Route path="/tools/reports" element={<ProtectedRoute><SmartReports /></ProtectedRoute>} />
           <Route path="/tools/tasks" element={<ProtectedRoute><TaskBoard /></ProtectedRoute>} />
+          <Route path="/tools/speech" element={<ProtectedRoute><SpeechStudio /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
-  </QueryClientProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
+  </ErrorBoundary>
 );
 
 export default App;
