@@ -120,6 +120,7 @@ export const IntegrationSetup = () => {
   );
 
   useEffect(() => {
+    integrationStorage.purgeSecrets();
     loadIntegrations();
   }, []);
 
@@ -192,7 +193,7 @@ export const IntegrationSetup = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-6" dir="rtl">
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-2">إعداد التكاملات</h1>
         <p className="text-muted-foreground">إدارة آمنة للتكاملات بدون حفظ مفاتيح خام داخل المتصفح</p>
@@ -218,7 +219,7 @@ export const IntegrationSetup = () => {
           ))}
         </TabsList>
 
-        {integrations.map((integration) => (
+        {integrations.map(integration => (
           <TabsContent key={integration.id} value={integration.id}>
             <Card className="p-6">
               <div className="flex items-start justify-between mb-6">
@@ -298,8 +299,19 @@ export const IntegrationSetup = () => {
                       </div>
                     ))}
                   </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button onClick={() => handleConnect(integration.id)} className="flex-1">
+                      حفظ الربط الآمن
+                    </Button>
+                    {integration.status === 'connected' && (
+                      <Button variant="outline" onClick={() => handleDisconnect(integration.id)}>
+                        قطع الاتصال
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              )}
+              </div>
             </Card>
           </TabsContent>
         ))}
