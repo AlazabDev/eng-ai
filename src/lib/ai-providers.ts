@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export type AIProvider = 'azure-apim' | 'openai' | 'deepseek';
+export type AzureApimModel = 'gpt-5.5' | 'gpt-5.1' | 'gpt-4.1' | 'gpt-4o';
 
 interface BaseConfig {
   provider: AIProvider;
@@ -9,7 +10,7 @@ interface BaseConfig {
 
 export interface AzureApimConfig extends BaseConfig {
   provider: 'azure-apim';
-  model: 'gpt-5' | 'gpt-4.1';
+  model: AzureApimModel;
 }
 
 export interface OpenAIConfig extends BaseConfig {
@@ -41,6 +42,11 @@ interface SendOptions {
 
 const SYSTEM_PROMPT =
   'أنت مساعد ذكي يتحدث باللغة العربية والإنجليزية. قدم إجابات مفيدة ومفصلة واستخدم اللغة التي يستخدمها المستخدم.';
+
+const DEFAULT_AZURE_APIM_CONFIG: AzureApimConfig = {
+  provider: 'azure-apim',
+  model: 'gpt-5.5',
+};
 
 export class AIService {
   private config: AIConfig;
@@ -136,8 +142,8 @@ export const aiConfigManager = {
   load: (): AIConfig | null => {
     const stored = localStorage.getItem('ai-config');
     if (stored) return JSON.parse(stored);
-    // Default: Azure APIM with gpt-5 (server-side key, no client config needed)
-    return { provider: 'azure-apim', model: 'gpt-5' };
+    // Default: Azure APIM with a server-side key. Keep this value aligned with azure-ai-chat allowed models.
+    return DEFAULT_AZURE_APIM_CONFIG;
   },
   clear: () => localStorage.removeItem('ai-config'),
   isConfigured: (): boolean => {
