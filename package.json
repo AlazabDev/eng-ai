@@ -1,7 +1,8 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "alazab-ai-console",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Alazab internal AI operations console for engineering, finance, documents, reports, WhatsApp, GitHub, and Azure AI workflows.",
   "type": "module",
   "scripts": {
     "dev": "vite",
