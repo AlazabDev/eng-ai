@@ -4,16 +4,43 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
-  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
-  MessageSquare, Settings, BarChart3, Phone, Cloud, Eye, FileSearch, Wand2,
-  Search as SearchIcon, Bot, Hammer, Box, LogOut, LogIn, Plus, Trash2, Pencil,
-  Check, X, Menu, Sparkles, Building2, Wallet, FileText, CheckSquare,
-  BarChart3 as BarChartIcon, AudioLines,
+  MessageSquare,
+  Settings,
+  BarChart3,
+  Phone,
+  Cloud,
+  Eye,
+  FileSearch,
+  Wand2,
+  Search as SearchIcon,
+  Bot,
+  Hammer,
+  Box,
+  LogOut,
+  LogIn,
+  Plus,
+  Pencil,
+  Check,
+  X,
+  Menu,
+  Sparkles,
+  Building2,
+  Wallet,
+  FileText,
+  CheckSquare,
+  BarChart3 as BarChartIcon,
+  AudioLines,
+  Calculator,
+  type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useChatSession, chatSessionStore } from '@/lib/chat-session-store';
+import { useChatSession } from '@/lib/chat-session-store';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,7 +50,14 @@ interface ChatSession {
   updated_at: string;
 }
 
-const NAV_ITEMS: { to: string; icon: any; label: string; badge?: string }[] = [
+interface NavItem {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+  badge?: string;
+}
+
+const NAV_ITEMS: NavItem[] = [
   { to: '/', icon: MessageSquare, label: 'الدردشة' },
   { to: '/tools/tasks', icon: CheckSquare, label: 'المهام والمشاريع' },
   { to: '/tools/contracts', icon: FileText, label: 'العقود والمستندات' },
@@ -40,7 +74,7 @@ const NAV_ITEMS: { to: string; icon: any; label: string; badge?: string }[] = [
   { to: '/analytics', icon: BarChart3, label: 'التحليلات' },
 ];
 
-const SERVICE_ITEMS = [
+const SERVICE_ITEMS: NavItem[] = [
   { to: '/azure/vision', icon: Eye, label: 'Vision · GPT-5.5' },
   { to: '/azure/finance', icon: Wallet, label: 'Finance · GPT-5.1' },
   { to: '/azure/agents/maintenance', icon: Hammer, label: 'Maintenance Agent' },
@@ -54,7 +88,7 @@ const SERVICE_ITEMS = [
   { to: '/services/arch-erp', icon: Hammer, label: 'Arch ERP' },
 ];
 
-const SETTINGS_ITEMS = [
+const SETTINGS_ITEMS: NavItem[] = [
   { to: '/settings', icon: Settings, label: 'الإعدادات' },
 ];
 
@@ -72,15 +106,21 @@ export const Sidebar = (): JSX.Element => {
   const [sessionSearch, setSessionSearch] = useState('');
 
   const loadSessions = async () => {
-    if (!user) return;
+    if (!user) {
+      setSessions([]);
+      return;
+    }
+
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('chat_sessions')
         .select('id, title, updated_at')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false })
         .limit(10);
-      if (data) setSessions(data as ChatSession[]);
+
+      if (error) throw error;
+      setSessions((data ?? []) as ChatSession[]);
     } catch (error) {
       console.error('Failed to load sessions:', error);
     }
@@ -88,14 +128,15 @@ export const Sidebar = (): JSX.Element => {
 
   useEffect(() => {
     loadSessions();
-    const interval = setInterval(loadSessions, 30000);
-    return () => clearInterval(interval);
+    const interval = window.setInterval(loadSessions, 30000);
+    return () => window.clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const createNewChat = (): void => {
-    chatSessionStore.setSession(null);
+    setSession(null);
     navigate('/');
+    setIsOpen(false);
   };
 
   const handleRename = async (id: string) => {
@@ -105,27 +146,22 @@ export const Sidebar = (): JSX.Element => {
     loadSessions();
   };
 
-  const handleDelete = async (id: string) => {
-    await supabase.from('chat_sessions').delete().eq('id', id);
-    if (sessionId === id) setSession(null);
-    loadSessions();
-  };
-
   const handleLogout = async () => {
     await signOut();
     toast({ title: 'تم تسجيل الخروج' });
     navigate('/auth');
   };
 
-  const filteredSessions = sessions.filter(s =>
-    s.title.toLowerCase().includes(sessionSearch.trim().toLowerCase())
+  const filteredSessions = sessions.filter(session =>
+    session.title.toLowerCase().includes(sessionSearch.trim().toLowerCase()),
   );
 
-  const NavLink = ({ to, icon: Icon, label }: { to: string; icon: any; label: string }) => {
+  const NavLink = ({ to, icon: Icon, label }: NavItem) => {
     const active = pathname === to;
     return (
       <Link
         to={to}
+        onClick={() => setIsOpen(false)}
         className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors ${
           active ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
         }`}
@@ -138,10 +174,11 @@ export const Sidebar = (): JSX.Element => {
 
   return (
     <>
-      {/* Mobile toggle */}
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-4 left-4 z-40 lg:hidden p-2 hover:bg-secondary rounded-lg transition-colors"
+        aria-label="فتح القائمة"
       >
         {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
@@ -152,14 +189,14 @@ export const Sidebar = (): JSX.Element => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         flex flex-col
       `}>
-        {/* Header */}
         <div className="p-6 border-b border-sidebar-border">
-          <h1 className="text-xl font-bold text-sidebar-foreground">Architect AI</h1>
-          <p className="text-xs text-sidebar-accent-foreground mt-1">دليل العمارة الذكي</p>
+          <h1 className="text-xl font-bold text-sidebar-foreground">Alazab AI Console</h1>
+          <p className="text-xs text-sidebar-accent-foreground mt-1">مركز الذكاء الهندسي والإداري</p>
         </div>
 
         <nav className="flex-1 overflow-y-auto flex flex-col">
           <button
+            type="button"
             onClick={createNewChat}
             className="m-4 mb-4 px-4 py-3 rounded-lg font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 flex items-center gap-2 justify-center"
           >
@@ -186,7 +223,6 @@ export const Sidebar = (): JSX.Element => {
             ))}
           </div>
 
-          {/* Sessions */}
           <div className="px-3 mb-4">
             <div className="px-2 pb-1.5">
               <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">المحادثات</span>
@@ -196,7 +232,7 @@ export const Sidebar = (): JSX.Element => {
                 <SearchIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
                 <Input
                   value={sessionSearch}
-                  onChange={e => setSessionSearch(e.target.value)}
+                  onChange={event => setSessionSearch(event.target.value)}
                   placeholder="ابحث في المحادثات..."
                   className="h-7 text-xs pr-7 bg-background"
                 />
@@ -208,43 +244,51 @@ export const Sidebar = (): JSX.Element => {
                   {sessionSearch ? 'لا توجد نتائج' : 'لا توجد محادثات'}
                 </p>
               )}
-              {filteredSessions.map(s => (
+              {filteredSessions.map(session => (
                 <div
-                  key={s.id}
+                  key={session.id}
                   className={`group flex items-center gap-1 px-2 py-1.5 rounded-md text-xs cursor-pointer ${
-                    sessionId === s.id ? 'bg-primary/10 text-primary' : 'hover:bg-accent text-muted-foreground'
+                    sessionId === session.id ? 'bg-primary/10 text-primary' : 'hover:bg-accent text-muted-foreground'
                   }`}
-                  onClick={() => editingId !== s.id && setSession(s.id)}
+                  onClick={() => editingId !== session.id && setSession(session.id)}
                 >
                   <MessageSquare className="w-3 h-3 flex-shrink-0" />
-                  {editingId === s.id ? (
+                  {editingId === session.id ? (
                     <>
                       <Input
                         value={editTitle}
-                        onChange={e => setEditTitle(e.target.value)}
+                        onChange={event => setEditTitle(event.target.value)}
                         className="h-5 text-xs flex-1"
-                        onClick={e => e.stopPropagation()}
-                        onKeyDown={e => e.key === 'Enter' && handleRename(s.id)}
+                        onClick={event => event.stopPropagation()}
+                        onKeyDown={event => event.key === 'Enter' && handleRename(session.id)}
                       />
-                      <Button size="icon" variant="ghost" className="h-5 w-5"
-                        onClick={e => { e.stopPropagation(); handleRename(s.id); }}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-5 w-5"
+                        onClick={event => { event.stopPropagation(); handleRename(session.id); }}
+                      >
                         <Check className="w-3 h-3" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="h-5 w-5"
-                        onClick={e => { e.stopPropagation(); setEditingId(null); }}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-5 w-5"
+                        onClick={event => { event.stopPropagation(); setEditingId(null); }}
+                      >
                         <X className="w-3 h-3" />
                       </Button>
                     </>
                   ) : (
                     <>
-                      <span className="flex-1 truncate" dir="auto">{s.title}</span>
-                      <Button size="icon" variant="ghost" className="h-5 w-5 opacity-0 group-hover:opacity-100"
-                        onClick={e => { e.stopPropagation(); setEditingId(s.id); setEditTitle(s.title); }}>
+                      <span className="flex-1 truncate" dir="auto">{session.title}</span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-5 w-5 opacity-0 group-hover:opacity-100"
+                        onClick={event => { event.stopPropagation(); setEditingId(session.id); setEditTitle(session.title); }}
+                      >
                         <Pencil className="w-2.5 h-2.5" />
-                      </Button>
-                      <Button size="icon" variant="ghost" className="h-5 w-5 opacity-0 group-hover:opacity-100 text-destructive"
-                        onClick={e => { e.stopPropagation(); handleDelete(s.id); }}>
-                        <Trash2 className="w-2.5 h-2.5" />
                       </Button>
                     </>
                   )}
@@ -267,7 +311,6 @@ export const Sidebar = (): JSX.Element => {
           </Accordion>
         </nav>
 
-        {/* Bottom Section */}
         <div className="border-t border-sidebar-border p-4 space-y-3">
           {SETTINGS_ITEMS.map(({ to, icon: Icon, label }) => (
             <Link
@@ -291,6 +334,7 @@ export const Sidebar = (): JSX.Element => {
                 <p className="font-medium truncate">{user.email}</p>
               </div>
               <button
+                type="button"
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground hover:bg-destructive/10 transition-all duration-200"
               >
