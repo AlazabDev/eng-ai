@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -107,7 +106,21 @@ function toKeyValueDraft(value: Record<string, string>): string {
   return Object.entries(value || {}).map(([key, val]) => `${key}=${val}`).join('\n');
 }
 
-export const IntegrationSetup = () => {
+function settingLabel(key: string, value: unknown): string {
+  const labels: Record<string, string> = {
+    autoSync: 'مزامنة تلقائية',
+    includePrivate: 'تضمين المستودعات الخاصة',
+    enableCaching: 'تفعيل التخزين المؤقت',
+    maxRepos: `الحد الأقصى للمستودعات: ${value}`,
+    maxFiles: `الحد الأقصى للملفات: ${value}`,
+    timeout: `مهلة الاتصال: ${value}s`,
+    retryAttempts: `محاولات الإعادة: ${value}`,
+  };
+
+  return labels[key] || key;
+}
+
+export const IntegrationSetup = (): JSX.Element => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('github');
   const [integrations, setIntegrations] = useState<IntegrationConfig[]>([]);
@@ -118,11 +131,6 @@ export const IntegrationSetup = () => {
     () => integrations.find(item => item.id === activeTab),
     [activeTab, integrations],
   );
-
-  useEffect(() => {
-    integrationStorage.purgeSecrets();
-    loadIntegrations();
-  }, []);
 
   const loadIntegrations = () => {
     const configs = DEFAULT_INTEGRATIONS.map(def => {
@@ -135,10 +143,16 @@ export const IntegrationSetup = () => {
         publicMetadata: saved?.publicMetadata || DEFAULT_PUBLIC_METADATA[def.id] || {},
       };
     });
+
     setIntegrations(configs);
     setSecretDrafts(Object.fromEntries(configs.map(item => [item.id, toKeyValueDraft(item.secretRefs)])));
     setMetadataDrafts(Object.fromEntries(configs.map(item => [item.id, toKeyValueDraft(item.publicMetadata)])));
   };
+
+  useEffect(() => {
+    integrationStorage.purgeSecrets();
+    loadIntegrations();
+  }, []);
 
   const saveIntegration = (integrationId: string, status: 'connected' | 'disconnected' | 'error' = 'connected') => {
     const integration = integrations.find(i => i.id === integrationId);
@@ -146,6 +160,7 @@ export const IntegrationSetup = () => {
 
     const secretRefs = parseKeyValueDraft(secretDrafts[integrationId] || '');
     const publicMetadata = parseKeyValueDraft(metadataDrafts[integrationId] || '');
+
     integrationStorage.save({
       id: integrationId,
       status,
@@ -154,9 +169,13 @@ export const IntegrationSetup = () => {
       publicMetadata,
       connectedAt: status === 'connected' ? new Date().toISOString() : undefined,
     });
+
     loadIntegrations();
     window.dispatchEvent(new Event('integrations-updated'));
-    toast({ title: status === 'connected' ? 'تم حفظ مرجع التكامل' : 'تم تحديث التكامل', description: 'تم حفظ أسماء الأسرار فقط بدون أي قيم حساسة.' });
+    toast({
+      title: status === 'connected' ? 'تم حفظ مرجع التكامل' : 'تم تحديث التكامل',
+      description: 'تم حفظ أسماء الأسرار فقط بدون أي قيم حساسة.',
+    });
   };
 
   const handleDisconnect = (integrationId: string) => {
@@ -169,6 +188,7 @@ export const IntegrationSetup = () => {
   const handleSettingChange = (integrationId: string, setting: string, value: any) => {
     const integration = integrations.find(i => i.id === integrationId);
     if (!integration) return;
+
     const newSettings = { ...integration.settings, [setting]: value };
     integrationStorage.save({
       id: integrationId,
@@ -238,13 +258,18 @@ export const IntegrationSetup = () => {
                   <h4 className="font-medium flex items-center gap-2"><Settings2 className="w-4 h-4" />خطوات الإعداد</h4>
                   <ol className="space-y-2 text-sm">
                     {integration.setupInstructions.map((step, index) => (
-                      <li key={index} className="flex gap-3">
+                      <li key={step} className="flex gap-3">
                         <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center flex-shrink-0 mt-0.5">{index + 1}</span>
                         <span>{step}</span>
                       </li>
                     ))}
                   </ol>
-                  <Button onClick={() => window.open(integration.id === 'github' ? 'https://github.com/settings/tokens' : integration.id === 'drive' ? 'https://console.cloud.google.com' : '#', '_blank')} variant="outline" size="sm" className="w-full">
+                  <Button
+                    onClick={() => window.open(integration.id === 'github' ? 'https://github.com/settings/tokens' : integration.id === 'drive' ? 'https://console.cloud.google.com' : '#', '_blank')}
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                  >
                     <ExternalLink className="w-4 h-4 mr-2" />فتح لوحة الخدمة
                   </Button>
                 </div>
@@ -283,16 +308,8 @@ export const IntegrationSetup = () => {
                   <h4 className="font-medium mb-4">إعدادات التكامل</h4>
                   <div className="grid md:grid-cols-2 gap-4">
                     {Object.entries(integration.settings).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between">
-                        <Label className="text-sm">
-                          {key === 'autoSync' && 'مزامنة تلقائية'}
-                          {key === 'includePrivate' && 'تضمين المستودعات الخاصة'}
-                          {key === 'enableCaching' && 'تفعيل التخزين المؤقت'}
-                          {key === 'maxRepos' && `الحد الأقصى للمستودعات: ${value}`}
-                          {key === 'maxFiles' && `الحد الأقصى للملفات: ${value}`}
-                          {key === 'timeout' && `مهلة الاتصال: ${value}s`}
-                          {key === 'retryAttempts' && `محاولات الإعادة: ${value}`}
-                        </Label>
+                      <div key={key} className="flex items-center justify-between gap-4">
+                        <Label className="text-sm">{settingLabel(key, value)}</Label>
                         {typeof value === 'boolean' && (
                           <Switch checked={value} onCheckedChange={(checked) => handleSettingChange(integration.id, key, checked)} />
                         )}
@@ -301,17 +318,15 @@ export const IntegrationSetup = () => {
                   </div>
 
                   <div className="flex gap-2 pt-4">
-                    <Button onClick={() => handleConnect(integration.id)} className="flex-1">
+                    <Button onClick={() => saveIntegration(integration.id)} className="flex-1">
                       حفظ الربط الآمن
                     </Button>
-                    {integration.status === 'connected' && (
-                      <Button variant="outline" onClick={() => handleDisconnect(integration.id)}>
-                        قطع الاتصال
-                      </Button>
-                    )}
+                    <Button variant="outline" onClick={() => handleDisconnect(integration.id)}>
+                      قطع الاتصال
+                    </Button>
                   </div>
                 </div>
-              </div>
+              )}
             </Card>
           </TabsContent>
         ))}
