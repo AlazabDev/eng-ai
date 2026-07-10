@@ -19,9 +19,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
     "type-check": "tsc -b --pretty false",
     "preview": "vite preview",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:ui": "vitest --ui",
+    "test": "pnpm dlx vitest@2.1.9",
+    "test:run": "pnpm dlx vitest@2.1.9 run",
     "verify": "pnpm run type-check && pnpm run lint && pnpm run test:run && pnpm run build"
   },
   "dependencies": {
