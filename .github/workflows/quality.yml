@@ -41,5 +41,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Verify project
-        run: pnpm run verify
+      - name: TypeScript
+        run: pnpm run type-check
+
+      - name: ESLint
+        run: pnpm run lint
+
+      - name: Unit tests
+        run: pnpm run test:run
+
+      - name: Production build
+        run: pnpm run build
