@@ -162,6 +162,13 @@ All colors MUST be HSL.
     from {
       opacity: 0;
       transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 /* Mermaid charts */
@@ -170,19 +177,14 @@ All colors MUST be HSL.
   height: auto;
   direction: ltr;
 }
+
 .mermaid-container .nodeLabel,
 .mermaid-container .edgeLabel,
 .mermaid-container text {
   font-family: 'Segoe UI', Tahoma, Arial, sans-serif !important;
 }
+
 [dir="rtl"] .mermaid-container {
   direction: ltr;
   text-align: left;
-}
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 }
