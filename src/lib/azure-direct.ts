@@ -3,13 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 export type AzureRole = 'system' | 'user' | 'assistant';
 export interface AzureMessage { role: AzureRole; content: string }
 
-/* =========================================================================
- * Unified Azure OpenAI client
- * - Single entry point: callAzureOpenAI
- * - Tool-specific helpers built from declarative TOOL_TEMPLATES
- * - Add a new tool by appending an entry to TOOL_TEMPLATES below
- * ========================================================================= */
-
 export interface AzureCallOptions {
   messages: AzureMessage[];
   temperature?: number;
@@ -18,7 +11,7 @@ export interface AzureCallOptions {
 }
 
 export async function callAzureOpenAI(opts: AzureCallOptions): Promise<string> {
-  const { data, error } = await supabase.functions.invoke('azure-openai-direct', {
+  const { data, error } = await supabase.functions.invoke('azure-ai-chat', {
     body: {
       messages: opts.messages,
       temperature: opts.temperature,
@@ -26,25 +19,30 @@ export async function callAzureOpenAI(opts: AzureCallOptions): Promise<string> {
       task: opts.task,
     },
   });
+
   if (error) {
-    let msg = error.message;
-    const ctx = (error as { context?: Response }).context;
-    try { if (ctx) { const p = await ctx.clone().json(); if (p?.error) msg = p.error; } } catch { /* ignore */ }
-    throw new Error(msg);
+    let message = error.message;
+    const context = (error as { context?: Response }).context;
+
+    try {
+      if (context) {
+        const parsed = await context.clone().json();
+        if (parsed?.error) message = parsed.error;
+      }
+    } catch {
+      // Preserve the original error returned by Supabase Functions.
+    }
+
+    throw new Error(message);
   }
+
   if (data?.error) throw new Error(data.error);
   return data?.content || '';
 }
 
-/* -------------------------------------------------------------------------
- * Shared base system prompt — appended to every tool
- * ------------------------------------------------------------------------- */
 export const BASE_SYSTEM_PROMPT =
   'أنت مساعد محترف يتقن العربية والإنجليزية. التزم بالتعليمات بدقة وقدم نتائج جاهزة للاستخدام دون مقدمات أو اعتذارات.';
 
-/* -------------------------------------------------------------------------
- * Tool templates — single source of truth for system prompts & defaults
- * ------------------------------------------------------------------------- */
 export type ToolKey =
   | 'summarize'
   | 'translate'
@@ -54,11 +52,8 @@ export type ToolKey =
   | 'brainstorm';
 
 export interface ToolTemplate {
-  /** Tool-specific system prompt (appended after BASE_SYSTEM_PROMPT). */
   system: string;
-  /** Builds the user message from raw input + UI options. */
   userPrompt: (input: string, opt: Record<string, string>) => string;
-  /** Default sampling parameters. */
   temperature?: number;
   maxTokens?: number;
 }
@@ -66,29 +61,29 @@ export interface ToolTemplate {
 export const TOOL_TEMPLATES: Record<ToolKey, ToolTemplate> = {
   summarize: {
     system: 'مهمتك تلخيص النصوص مع الحفاظ على المعنى الأساسي والمعلومات الجوهرية.',
-    userPrompt: (input, o) =>
-      `لخّص النص التالي في ${o.style || 'نقاط موجزة'}:\n\n${input}`,
+    userPrompt: (input, options) =>
+      `لخّص النص التالي في ${options.style || 'نقاط موجزة'}:\n\n${input}`,
     temperature: 0.3,
     maxTokens: 1200,
   },
   translate: {
     system: 'مهمتك الترجمة الاحترافية مع الحفاظ على المعنى، الأسلوب، والمصطلحات التقنية.',
-    userPrompt: (input, o) =>
-      `ترجم النص التالي إلى ${o.lang || 'الإنجليزية'} مع الحفاظ على المعنى والأسلوب:\n\n${input}`,
+    userPrompt: (input, options) =>
+      `ترجم النص التالي إلى ${options.lang || 'الإنجليزية'} مع الحفاظ على المعنى والأسلوب:\n\n${input}`,
     temperature: 0.2,
     maxTokens: 2000,
   },
   rewrite: {
     system: 'مهمتك إعادة صياغة النصوص لتكون أوضح وأكثر تأثيراً مع الحفاظ على المعنى الأصلي.',
-    userPrompt: (input, o) =>
-      `أعد صياغة النص التالي بنبرة ${o.tone || 'احترافية'} وبشكل أوضح وأقصر:\n\n${input}`,
+    userPrompt: (input, options) =>
+      `أعد صياغة النص التالي بنبرة ${options.tone || 'احترافية'} وبشكل أوضح وأقصر:\n\n${input}`,
     temperature: 0.6,
     maxTokens: 1500,
   },
   email: {
     system: 'مهمتك كتابة رسائل بريد إلكتروني احترافية ومقنعة بصياغة ملائمة للسياق.',
-    userPrompt: (input, o) =>
-      `اكتب بريداً إلكترونياً ${o.tone || 'احترافياً'} باللغة ${o.lang || 'العربية'} حول الموضوع التالي. ابدأ بسطر "العنوان:" ثم نص الرسالة كاملاً:\n\n${input}`,
+    userPrompt: (input, options) =>
+      `اكتب بريداً إلكترونياً ${options.tone || 'احترافياً'} باللغة ${options.lang || 'العربية'} حول الموضوع التالي. ابدأ بسطر "العنوان:" ثم نص الرسالة كاملاً:\n\n${input}`,
     temperature: 0.6,
     maxTokens: 1200,
   },
@@ -101,39 +96,36 @@ export const TOOL_TEMPLATES: Record<ToolKey, ToolTemplate> = {
   },
   brainstorm: {
     system: 'مهمتك توليد أفكار إبداعية ومتنوعة وقابلة للتنفيذ.',
-    userPrompt: (input, o) =>
-      `قدّم ${o.count || '8'} أفكار إبداعية وقابلة للتنفيذ حول:\n\n${input}`,
+    userPrompt: (input, options) =>
+      `قدّم ${options.count || '8'} أفكار إبداعية وقابلة للتنفيذ حول:\n\n${input}`,
     temperature: 0.9,
     maxTokens: 1500,
   },
 };
 
-/* -------------------------------------------------------------------------
- * High-level helper — builds messages from a template + runs the call
- * ------------------------------------------------------------------------- */
 export function buildToolMessages(
   tool: ToolKey,
   input: string,
-  opt: Record<string, string> = {},
+  options: Record<string, string> = {},
 ): AzureMessage[] {
-  const tpl = TOOL_TEMPLATES[tool];
+  const template = TOOL_TEMPLATES[tool];
   return [
-    { role: 'system', content: `${BASE_SYSTEM_PROMPT}\n\n${tpl.system}` },
-    { role: 'user', content: tpl.userPrompt(input, opt) },
+    { role: 'system', content: `${BASE_SYSTEM_PROMPT}\n\n${template.system}` },
+    { role: 'user', content: template.userPrompt(input, options) },
   ];
 }
 
 export async function runTool(
   tool: ToolKey,
   input: string,
-  opt: Record<string, string> = {},
+  options: Record<string, string> = {},
   overrides: { temperature?: number; maxTokens?: number } = {},
 ): Promise<string> {
-  const tpl = TOOL_TEMPLATES[tool];
+  const template = TOOL_TEMPLATES[tool];
   return callAzureOpenAI({
-    messages: buildToolMessages(tool, input, opt),
-    temperature: overrides.temperature ?? tpl.temperature,
-    maxTokens: overrides.maxTokens ?? tpl.maxTokens,
+    messages: buildToolMessages(tool, input, options),
+    temperature: overrides.temperature ?? template.temperature,
+    maxTokens: overrides.maxTokens ?? template.maxTokens,
     task: tool,
   });
 }
