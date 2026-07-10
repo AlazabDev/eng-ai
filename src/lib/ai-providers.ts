@@ -20,6 +20,7 @@ interface SendOptions {
 }
 
 const STORAGE_KEY = 'ai-public-config';
+const LEGACY_SECRET_KEYS = ['ai-config', 'azure-openai-config'];
 const ALLOWED_MODELS: AzureApimModel[] = ['gpt-5.5', 'gpt-5.1', 'gpt-4.1', 'gpt-4o'];
 const DEFAULT_CONFIG: AIConfig = {
   provider: 'azure-apim',
@@ -28,6 +29,10 @@ const DEFAULT_CONFIG: AIConfig = {
 
 const SYSTEM_PROMPT =
   'أنت مساعد مهني داخلي لشركة العزب. أجب بالعربية أو الإنجليزية حسب لغة المستخدم، والتزم بالدقة وعدم اختلاق بيانات غير موجودة.';
+
+function purgeLegacySecrets(): void {
+  for (const key of LEGACY_SECRET_KEYS) localStorage.removeItem(key);
+}
 
 function isAllowedModel(value: unknown): value is AzureApimModel {
   return typeof value === 'string' && ALLOWED_MODELS.includes(value as AzureApimModel);
@@ -76,6 +81,7 @@ export class AIService {
 
 export const aiConfigManager = {
   save: (config: AIConfig): void => {
+    purgeLegacySecrets();
     const safeConfig: AIConfig = {
       provider: 'azure-apim',
       model: isAllowedModel(config.model) ? config.model : DEFAULT_CONFIG.model,
@@ -84,6 +90,7 @@ export const aiConfigManager = {
   },
 
   load: (): AIConfig => {
+    purgeLegacySecrets();
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (!stored) return DEFAULT_CONFIG;
@@ -98,8 +105,15 @@ export const aiConfigManager = {
     }
   },
 
-  clear: (): void => localStorage.removeItem(STORAGE_KEY),
-  isConfigured: (): boolean => true,
+  clear: (): void => {
+    purgeLegacySecrets();
+    localStorage.removeItem(STORAGE_KEY);
+  },
+
+  isConfigured: (): boolean => {
+    purgeLegacySecrets();
+    return true;
+  },
 };
 
 export const availableAzureModels = ALLOWED_MODELS;
