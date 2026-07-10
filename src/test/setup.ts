@@ -1,16 +1,13 @@
 import '@testing-library/jest-dom';
-import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
-// Cleanup after each test
 afterEach(() => {
   cleanup();
 });
 
-// Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -22,9 +19,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
   disconnect() {}
   observe() {}
   takeRecords() {
@@ -33,8 +28,8 @@ global.IntersectionObserver = class IntersectionObserver {
   unobserve() {}
 } as any;
 
-// Suppress console errors in tests unless needed
 const originalError = console.error;
+
 beforeAll(() => {
   console.error = (...args: any[]) => {
     if (
