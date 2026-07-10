@@ -4,6 +4,15 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
+const legacyCompatibilityRules = {
+  "no-empty": "warn",
+  "no-constant-binary-expression": "warn",
+  "prefer-const": "warn",
+  "no-useless-escape": "warn",
+  "@typescript-eslint/no-empty-object-type": "warn",
+  "@typescript-eslint/no-require-imports": "warn",
+};
+
 const typescriptRules = {
   "@typescript-eslint/no-unused-vars": [
     "warn",
@@ -36,6 +45,7 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       ...typescriptRules,
+      ...legacyCompatibilityRules,
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
@@ -60,6 +70,7 @@ export default tseslint.config(
     },
     rules: {
       ...typescriptRules,
+      ...legacyCompatibilityRules,
       "no-console": "off",
     },
   },
