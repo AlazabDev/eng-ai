@@ -3,7 +3,6 @@ name: Quality Gate
 on:
   push:
     branches:
-      - codex
       - main
   pull_request:
     branches:
