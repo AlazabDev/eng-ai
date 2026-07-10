@@ -1,0 +1,73 @@
+name: Align test toolchain
+
+on:
+  push:
+    branches:
+      - codex
+
+permissions:
+  contents: write
+
+concurrency:
+  group: align-test-toolchain
+  cancel-in-progress: false
+
+jobs:
+  align:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout codex
+        uses: actions/checkout@v4
+        with:
+          ref: codex
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.27.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Align package manifest
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+
+          packageJson.scripts.test = 'vitest';
+          packageJson.scripts['test:run'] = 'vitest run';
+          packageJson.scripts['test:ui'] = 'vitest --ui';
+          packageJson.devDependencies['@types/three'] = '0.160.0';
+          packageJson.devDependencies['@vitest/ui'] = '2.1.9';
+          packageJson.devDependencies.jsdom = '24.1.3';
+          packageJson.devDependencies.vitest = '2.1.9';
+
+          fs.writeFileSync('package.json', `${JSON.stringify(packageJson, null, 2)}\n`);
+          NODE
+
+          rm -f src/types/three.d.ts
+
+      - name: Refresh frozen lockfile
+        run: pnpm install --lockfile-only --no-frozen-lockfile
+
+      - name: Remove one-off workflow
+        run: rm -f .github/workflows/align-test-toolchain.yml
+
+      - name: Commit aligned toolchain
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json pnpm-lock.yaml src/types/three.d.ts .github/workflows/align-test-toolchain.yml
+          git commit -m 'build: align test and Three.js toolchain' || exit 0
+          git push origin HEAD:codex
