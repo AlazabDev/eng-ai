@@ -6,6 +6,10 @@ declare module 'three' {
   }
 
   export class MeshStandardMaterial {
+    color: unknown;
+    roughness: number;
+    metalness: number;
+
     constructor(parameters?: MeshStandardMaterialParameters);
   }
 
