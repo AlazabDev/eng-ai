@@ -22,7 +22,6 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage",
     "verify": "pnpm run type-check && pnpm run lint && pnpm run test:run && pnpm run build"
   },
   "dependencies": {
@@ -101,7 +100,6 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
-    "@vitest/coverage-v8": "^4.1.7",
     "@vitest/ui": "^4.1.7",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.9.0",
