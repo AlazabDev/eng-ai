@@ -1,8 +1,7 @@
-import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 
-export default defineConfig({
+export default {
   plugins: [react()],
   test: {
     globals: true,
@@ -25,4 +24,4 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-});
+};
