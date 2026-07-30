@@ -63,7 +63,13 @@ const SmartReports = () => {
 
   const loadHistory = async () => {
     if (!user) return;
-    const { data } = await supabase.from('reports').select('id,title,type,source,payload,created_at').order('created_at', { ascending: false }).limit(20);
+    const { data, error: dbErr } = await supabase.from('reports').select('id,title,type,source,payload,created_at').order('created_at', { ascending: false }).limit(20);
+    if (dbErr) {
+      // Previously this error was swallowed, so a permission/session failure
+      // silently rendered an empty history with no explanation.
+      handleDatabaseError(dbErr, 'SmartReports.loadHistory');
+      return;
+    }
     setHistory(data || []);
   };
   useEffect(() => { loadHistory(); }, [user]);
@@ -92,7 +98,7 @@ const SmartReports = () => {
     const { error: dbErr } = await supabase.from('reports').insert({
       user_id: user.id, type, source, title: report.title || title, payload: report as any,
     });
-    if (dbErr) toast({ title: 'فشل الحفظ', description: dbErr.message, variant: 'destructive' });
+    if (dbErr) toast({ title: 'فشل الحفظ', description: getDatabaseErrorMessageAr(dbErr), variant: 'destructive' });
     else { toast({ title: 'تم الحفظ' }); loadHistory(); }
   };
 

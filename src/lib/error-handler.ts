@@ -90,3 +90,74 @@ export const createError = (
   message: string,
   statusCode: number = 500
 ) => new AppError(ErrorCodes[code], message, statusCode);
+
+/**
+ * PostgREST / Postgres error codes mapped to Arabic messages.
+ * Raw messages like "permission denied for table tasks" were being shown
+ * directly to users on the tasks / reports / contracts pages.
+ */
+const POSTGREST_ERROR_MESSAGES_AR: Record<string, string> = {
+  // Postgres
+  '42501': 'لا تملك صلاحية الوصول إلى هذه البيانات. تأكد من تسجيل الدخول بحساب لديه الصلاحية.',
+  '42P01': 'الجدول المطلوب غير موجود في قاعدة البيانات. يلزم تشغيل تحديثات قاعدة البيانات (migrations).',
+  '23505': 'هذا السجل موجود بالفعل. جرّب قيمة مختلفة.',
+  '23503': 'لا يمكن إتمام العملية لأن السجل مرتبط ببيانات أخرى.',
+  '23502': 'هناك حقل مطلوب تُرك فارغاً. أكمل جميع الحقول الإلزامية.',
+  '22P02': 'صيغة إحدى القيم غير صحيحة. تحقق من المدخلات.',
+  // PostgREST
+  PGRST301: 'انتهت صلاحية الجلسة. أعد تسجيل الدخول للمتابعة.',
+  PGRST116: 'لم يتم العثور على السجل المطلوب.',
+  PGRST204: 'أحد الأعمدة المُرسلة غير موجود في الجدول.',
+};
+
+type SupabaseLikeError = {
+  code?: string | null;
+  message?: string | null;
+  details?: string | null;
+  hint?: string | null;
+};
+
+function isSupabaseLikeError(error: unknown): error is SupabaseLikeError {
+  return typeof error === 'object' && error !== null && ('code' in error || 'message' in error);
+}
+
+/**
+ * Converts a Supabase/PostgREST error into a user-facing Arabic message.
+ * Falls back to a generic Arabic message rather than leaking SQL details.
+ */
+export function getDatabaseErrorMessageAr(error: unknown): string {
+  if (!isSupabaseLikeError(error)) {
+    return 'حدث خطأ غير متوقع أثناء الاتصال بقاعدة البيانات. حاول مرة أخرى.';
+  }
+
+  const code = error.code ?? '';
+  if (code && POSTGREST_ERROR_MESSAGES_AR[code]) {
+    return POSTGREST_ERROR_MESSAGES_AR[code];
+  }
+
+  const message = error.message ?? '';
+
+  if (/JWT|token|not authenticated|Auth session missing/i.test(message)) {
+    return 'انتهت صلاحية الجلسة. أعد تسجيل الدخول للمتابعة.';
+  }
+
+  if (/permission denied|row-level security|RLS/i.test(message)) {
+    return POSTGREST_ERROR_MESSAGES_AR['42501'];
+  }
+
+  if (/Failed to fetch|NetworkError|network/i.test(message)) {
+    return 'تعذّر الاتصال بالخادم. تحقّق من اتصالك بالإنترنت ثم حاول مرة أخرى.';
+  }
+
+  return 'حدث خطأ أثناء تنفيذ العملية على قاعدة البيانات. حاول مرة أخرى.';
+}
+
+/**
+ * Logs the technical error and shows the Arabic equivalent as a toast.
+ */
+export function handleDatabaseError(error: unknown, context = 'Database'): string {
+  const friendly = getDatabaseErrorMessageAr(error);
+  console.error(`[${context}]`, error);
+  toast.error(friendly, { duration: 6000 });
+  return friendly;
+}
