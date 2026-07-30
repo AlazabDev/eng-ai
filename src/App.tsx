@@ -41,6 +41,32 @@ const SmartReports = lazy(() => import("./pages/tools/SmartReports"));
 const TaskBoard = lazy(() => import("./pages/tools/TaskBoard"));
 const SpeechStudio = lazy(() => import("./pages/SpeechStudio"));
 
+const Index = lazy(() => import("./pages/Index"));
+const Integrations = lazy(() => import("./pages/Integrations"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const Settings = lazy(() => import("./pages/Settings"));
+const WhatsApp = lazy(() => import("./pages/WhatsApp"));
+const Azure = lazy(() => import("./pages/Azure"));
+const AzureSettings = lazy(() => import("./pages/AzureSettings"));
+const AzureContextPage = lazy(() => import("./pages/azure/AzureContextPage"));
+const Auth = lazy(() => import("./pages/Auth"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const VisionOCR = lazy(() => import("./pages/services/VisionOCR"));
+const DocumentIntelligence = lazy(() => import("./pages/services/DocumentIntelligence"));
+const AIProcessing = lazy(() => import("./pages/services/AIProcessing"));
+const MaintenanceSearch = lazy(() => import("./pages/services/MaintenanceSearch"));
+const QAAgent = lazy(() => import("./pages/services/QAAgent"));
+const ArchERP = lazy(() => import("./pages/services/ArchERP"));
+const EngineeringTools = lazy(() => import("./pages/EngineeringTools"));
+const ProductivityTools = lazy(() => import("./pages/ProductivityTools"));
+const ArchitectureAnalysis = lazy(() => import("./pages/ArchitectureAnalysis"));
+const FinanceAnalysis = lazy(() => import("./pages/FinanceAnalysis"));
+const FinanceModule = lazy(() => import("./pages/finance/FinanceModule"));
+const ContractsGenerator = lazy(() => import("./pages/tools/ContractsGenerator"));
+const SmartReports = lazy(() => import("./pages/tools/SmartReports"));
+const TaskBoard = lazy(() => import("./pages/tools/TaskBoard"));
+const SpeechStudio = lazy(() => import("./pages/SpeechStudio"));
+
 const queryClient = new QueryClient();
 
 const App = () => (

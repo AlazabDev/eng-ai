@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 import { integrationStorage } from './integration-storage';
 
 export interface GitHubUser {
@@ -28,68 +29,59 @@ export interface GitHubFile {
   download_url: string | null;
 }
 
-class GitHubAPI {
-  private getToken(): string | null {
-    const data = integrationStorage.load('github');
-    return data?.apiKey || null;
-  }
+type GitHubProxyAction = 'user' | 'repos' | 'contents' | 'file';
 
-  private getHeaders(): HeadersInit {
-    const token = this.getToken();
-    if (!token) throw new Error('GitHub غير متصل. يرجى ربط حسابك أولاً.');
-    return {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3+json',
-    };
+class GitHubAPI {
+  private async invoke<T>(action: GitHubProxyAction, payload: Record<string, unknown> = {}): Promise<T> {
+    const { data, error } = await supabase.functions.invoke('github-proxy', {
+      body: { action, ...payload },
+    });
+
+    if (error) {
+      const context = (error as { context?: Response }).context;
+      let message = error.message;
+
+      try {
+        if (context) {
+          const parsed = await context.clone().json();
+          if (parsed?.error) message = parsed.error;
+        }
+      } catch {
+        // Keep the original Supabase Functions error.
+      }
+
+      throw new Error(`GitHub proxy error: ${message}`);
+    }
+
+    if (data?.error) throw new Error(`GitHub proxy error: ${data.error}`);
+    return data as T;
   }
 
   isConnected(): boolean {
-    return integrationStorage.getStatus('github') === 'connected';
+    const integration = integrationStorage.load('github');
+    return integration?.status === 'connected' && Boolean(integration.secretRefs?.GITHUB_TOKEN);
   }
 
   async getUser(): Promise<GitHubUser> {
-    const res = await fetch('https://api.github.com/user', { headers: this.getHeaders() });
-    if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-    return res.json();
+    return this.invoke<GitHubUser>('user');
   }
 
   async getRepos(page = 1, perPage = 30): Promise<GitHubRepo[]> {
     const settings = integrationStorage.load('github')?.settings || {};
-    const includePrivate = settings.includePrivate ? '' : '&type=public';
-    const res = await fetch(
-      `https://api.github.com/user/repos?per_page=${perPage}&page=${page}&sort=updated${includePrivate}`,
-      { headers: this.getHeaders() }
-    );
-    if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-    return res.json();
+    return this.invoke<GitHubRepo[]>('repos', {
+      page,
+      perPage,
+      includePrivate: Boolean(settings.includePrivate),
+    });
   }
 
   async getRepoContents(owner: string, repo: string, path = ''): Promise<GitHubFile[]> {
-    const res = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-      { headers: this.getHeaders() }
-    );
-    if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-    const data = await res.json();
-    return Array.isArray(data) ? data : [data];
+    return this.invoke<GitHubFile[]>('contents', { owner, repo, path });
   }
 
   async getFileContent(owner: string, repo: string, path: string): Promise<string> {
-    const res = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-      { headers: this.getHeaders() }
-    );
-    if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-    const data = await res.json();
-
-    if (data.encoding === 'base64' && data.content) {
-      return atob(data.content.replace(/\n/g, ''));
-    }
-    if (data.download_url) {
-      const fileRes = await fetch(data.download_url);
-      return fileRes.text();
-    }
-    throw new Error('لا يمكن قراءة محتوى الملف');
+    const result = await this.invoke<{ content: string }>('file', { owner, repo, path });
+    return result.content;
   }
 }
 
