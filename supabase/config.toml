@@ -1,4 +1,7 @@
-project_id = "ufpodaidblajzjsczlvo"
+# MUST match VITE_SUPABASE_URL in .env — a mismatch makes `supabase db push`
+# and `supabase functions deploy` target the WRONG database.
+# Verify with: node scripts/check-supabase.mjs
+project_id = "ekgvdaigbhfpekuzijph"
 
 [functions.azure-health]
 verify_jwt = true

@@ -31,7 +31,7 @@ export default tseslint.config(
           caughtErrorsIgnorePattern: "^_",
         },
       ],
-      "@typescript-eslint/explicit-function-return-types": [
+      "@typescript-eslint/explicit-function-return-type": [
         "warn",
         {
           allowExpressions: true,

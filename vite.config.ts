@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    // Allow preview/sandbox proxy hosts (v0, Vercel sandboxes, tunnels)
+    allowedHosts: true,
+  },
+  preview: {
+    host: "::",
+    port: 8080,
+    allowedHosts: true,
   },
   plugins: [
     react(),
@@ -18,5 +25,21 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  build: {
+    // The heavy visualisation/PDF libs are only reachable from lazy routes.
+    // Splitting them keeps the initial (login) payload small.
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+          supabase: ["@supabase/supabase-js"],
+          mermaid: ["mermaid"],
+          three: ["three"],
+          pdf: ["jspdf"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 900,
   },
 }));
