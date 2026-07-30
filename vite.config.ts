@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    // Allow preview/sandbox proxy hosts (v0, Vercel sandboxes, tunnels)
+    allowedHosts: true,
+  },
+  preview: {
+    host: "::",
+    port: 8080,
+    allowedHosts: true,
   },
   plugins: [
     react(),
