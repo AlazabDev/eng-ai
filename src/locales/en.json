@@ -1,0 +1,10 @@
+{
+  "common": {
+    "welcome": "Welcome to Alazab AI Gateway",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "logout": "Logout",
+    "loading": "Loading...",
+    "error": "An error occurred"
+  }
+}

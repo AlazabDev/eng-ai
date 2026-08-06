@@ -1,7 +1,9 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { isSupabaseConfigured, missingSupabaseEnvVars } from './integrations/supabase/client'
+import './i18n'
 import './index.css'
+import '../firebase'
 
 // Ensure RTL for Arabic UI
 if (typeof document !== 'undefined') {
