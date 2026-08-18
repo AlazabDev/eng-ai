@@ -1,13 +1,13 @@
 {
-  "name": "alazab-ai-console",
+  "name": "eng-ai",
   "private": true,
   "version": "0.1.0",
   "description": "Alazab internal AI operations console for engineering, finance, documents, reports, WhatsApp, GitHub, and Azure AI workflows.",
   "type": "module",
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@11.27.0",
   "engines": {
-    "node": ">=22",
-    "pnpm": ">=10"
+    "node": ">=24",
+    "pnpm": ">=11"
   },
   "scripts": {
     "dev": "vite",
