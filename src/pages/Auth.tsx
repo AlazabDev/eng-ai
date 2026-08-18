@@ -5,9 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Bot, Loader2 } from 'lucide-react';
+import { Bot, Loader2, LockKeyhole } from 'lucide-react';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -15,7 +14,6 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -23,29 +21,22 @@ export default function Auth() {
     });
   }, [navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (event: React.FormEvent) => {
+    event.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) return toast({ title: 'فشل تسجيل الدخول', description: error.message, variant: 'destructive' });
-    navigate('/', { replace: true });
-  };
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-        data: { display_name: displayName || email.split('@')[0] },
-      },
-    });
-    setLoading(false);
-    if (error) return toast({ title: 'فشل إنشاء الحساب', description: error.message, variant: 'destructive' });
-    toast({ title: 'تم إنشاء الحساب', description: 'تحقق من بريدك لتأكيد الحساب ثم سجّل الدخول.' });
+    if (error) {
+      toast({
+        title: 'فشل تسجيل الدخول',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    navigate('/', { replace: true });
   };
 
   return (
@@ -57,52 +48,47 @@ export default function Auth() {
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-bold">Alazab AI Console</h1>
-            <p className="text-sm text-muted-foreground">سجّل الدخول للوصول إلى منصة الذكاء الاصطناعي</p>
+            <p className="text-sm text-muted-foreground">منصة داخلية لمستخدمي العزب المصرح لهم فقط</p>
           </div>
         </div>
 
-        <Tabs defaultValue="login">
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="login">تسجيل الدخول</TabsTrigger>
-            <TabsTrigger value="signup">إنشاء حساب</TabsTrigger>
-          </TabsList>
+        <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground flex gap-2">
+          <LockKeyhole className="w-4 h-4 mt-0.5 shrink-0" />
+          <p>إنشاء الحسابات متوقف من الواجهة. تتم إضافة المستخدمين وإدارة الصلاحيات مركزيًا.</p>
+        </div>
 
-          <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="li-email">البريد الإلكتروني</Label>
-                <Input id="li-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} dir="ltr" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="li-password">كلمة المرور</Label>
-                <Input id="li-password" type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} dir="ltr" />
-              </div>
-              <Button type="submit" disabled={loading} className="w-full">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'دخول'}
-              </Button>
-            </form>
-          </TabsContent>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="login-email">البريد الإلكتروني</Label>
+            <Input
+              id="login-email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              dir="ltr"
+            />
+          </div>
 
-          <TabsContent value="signup">
-            <form onSubmit={handleSignup} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="su-name">الاسم</Label>
-                <Input id="su-name" value={displayName} onChange={e => setDisplayName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="su-email">البريد الإلكتروني</Label>
-                <Input id="su-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} dir="ltr" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="su-password">كلمة المرور</Label>
-                <Input id="su-password" type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} dir="ltr" />
-              </div>
-              <Button type="submit" disabled={loading} className="w-full">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'إنشاء الحساب'}
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+          <div className="space-y-2">
+            <Label htmlFor="login-password">كلمة المرور</Label>
+            <Input
+              id="login-password"
+              type="password"
+              autoComplete="current-password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              dir="ltr"
+            />
+          </div>
+
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'تسجيل الدخول'}
+          </Button>
+        </form>
       </Card>
     </div>
   );

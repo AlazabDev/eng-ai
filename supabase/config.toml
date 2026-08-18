@@ -21,9 +21,6 @@ verify_jwt = true
 [functions.azure-search]
 verify_jwt = true
 
-[functions.azure-openai-direct]
-verify_jwt = true
-
 [functions.architecture-analyze]
 verify_jwt = true
 
@@ -43,6 +40,9 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.whatsapp-media-url]
+verify_jwt = true
+
+[functions.github-proxy]
 verify_jwt = true
 
 [functions.whatsapp-webhook]
