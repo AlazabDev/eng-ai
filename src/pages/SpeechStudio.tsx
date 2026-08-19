@@ -184,7 +184,7 @@ const SpeechStudio = () => {
       rec.start();
       mediaRecRef.current = rec;
       setRecording(true);
-    } catch (e) {
+    } catch {
       toast({ title: 'تعذر الوصول للميكروفون', variant: 'destructive' });
     }
   };

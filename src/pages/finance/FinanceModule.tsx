@@ -33,7 +33,6 @@ import {
   RefreshCw,
   Save,
   Send,
-  Settings2,
   Wallet,
 } from 'lucide-react';
 

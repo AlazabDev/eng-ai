@@ -30,7 +30,7 @@ export const DriveConnector = () => {
       
       setFiles(mockFiles);
       toast({ title: 'نجاح', description: 'تم استيراد الملفات من Google Drive بنجاح' });
-    } catch (error) {
+    } catch {
       toast({ title: 'خطأ', description: 'فشل استيراد الملفات', variant: 'destructive' });
     } finally {
       setLoading(false);

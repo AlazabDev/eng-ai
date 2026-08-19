@@ -10,11 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Activity,
   AlertTriangle,
-  Bot,
   CheckCircle2,
-  Cloud,
   Copy,
-  Cpu,
   Database,
   Loader2,
   RefreshCw,

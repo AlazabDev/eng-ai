@@ -10,7 +10,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Glasses, Download, RotateCcw, FileText } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { WoodUnitSpec, specToArabicSummary } from '@/lib/wood-unit-parser';
 import { calcQuoteItems, totals } from '@/lib/quote-utils';
 import { useToast } from '@/hooks/use-toast';
@@ -179,7 +179,6 @@ export const WoodUnitDesigner: React.FC<Props> = ({ spec, onSpecChange, onClose 
   const { toast } = useToast();
   const [qty, setQty] = useState(1);
   const [pricePerM3, setPricePerM3] = useState(18000);
-  const [vrMode, setVrMode] = useState(false);
 
   const items = useMemo(() => calcQuoteItems({
     unitType: spec.kind, woodType: spec.woodType,
