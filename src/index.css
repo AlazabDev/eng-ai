@@ -22,16 +22,14 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 12%;
 
-    /* Primary - Deep purple/violet for brand */
-    --primary: 265 85% 55%;
+    /* Brand palette: graphite, ivory, copper, and calm teal */
+    --primary: 186 62% 31%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Light neutral */
-    --secondary: 240 8% 96%;
-    --secondary-foreground: 240 10% 12%;
+    --secondary: 42 28% 95%;
+    --secondary-foreground: 210 20% 18%;
 
-    /* Accent - Complementary blue */
-    --accent: 220 90% 56%;
+    --accent: 28 72% 50%;
     --accent-foreground: 0 0% 100%;
 
     /* Destructive */

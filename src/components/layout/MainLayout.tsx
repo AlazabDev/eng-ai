@@ -7,8 +7,7 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps): JSX.Element => {
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
+    <div dir="rtl" className="flex h-screen overflow-hidden bg-background text-foreground">
       <Sidebar />
 
       {/* Main Content */}
