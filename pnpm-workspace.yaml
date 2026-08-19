@@ -1,6 +1,6 @@
 allowBuilds:
-  '@firebase/util': true
+  '@firebase/util': set this to true or false
   '@swc/core': true
   core-js: true
   esbuild: true
-  protobufjs: true
+  protobufjs: set this to true or false
