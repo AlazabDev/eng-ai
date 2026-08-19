@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 
 export const WhatsAppConnector = () => {
   const { integrations } = useIntegrationStore();
-  const company = integrations['company']; // We can use the company integration or create a new 'whatsapp' one. Let's assume WhatsApp uses company for now, or we just mock it.
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(false);
@@ -34,7 +33,7 @@ export const WhatsAppConnector = () => {
         description: `تم إرسال التقرير الآلي إلى الرقم ${phoneNumber}`,
       });
       setMessage('');
-    } catch (error) {
+    } catch {
       toast({ title: 'فشل الإرسال', description: 'تأكد من إعدادات Twilio/WhatsApp API', variant: 'destructive' });
     } finally {
       setLoading(false);

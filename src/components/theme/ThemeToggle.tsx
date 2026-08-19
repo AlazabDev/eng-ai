@@ -9,7 +9,7 @@ import {
 import { useTheme, type Theme } from './ThemeProvider';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
 
   const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme);

@@ -37,8 +37,8 @@ export const GitHubBrowser = ({ open, onOpenChange, onFileSelected }: GitHubBrow
     try {
       const data = await githubAPI.getRepos();
       setRepos(data);
-    } catch (error) {
-      toast({ title: 'خطأ', description: error instanceof Error ? error.message : 'فشل تحميل المستودعات', variant: 'destructive' });
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل تحميل المستودعات', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,7 @@ export const GitHubBrowser = ({ open, onOpenChange, onFileSelected }: GitHubBrow
       const [owner, repo] = fullName.split('/');
       const data = await githubAPI.getRepoContents(owner, repo);
       setFiles(data);
-    } catch (error) {
+    } catch {
       toast({ title: 'خطأ', description: 'فشل تحميل محتويات المستودع', variant: 'destructive' });
     } finally {
       setLoading(false);
@@ -69,7 +69,7 @@ export const GitHubBrowser = ({ open, onOpenChange, onFileSelected }: GitHubBrow
       const [owner, repo] = selectedRepo.split('/');
       const data = await githubAPI.getRepoContents(owner, repo, path);
       setFiles(data);
-    } catch (error) {
+    } catch {
       toast({ title: 'خطأ', description: 'فشل تحميل المجلد', variant: 'destructive' });
     } finally {
       setLoading(false);
@@ -85,7 +85,7 @@ export const GitHubBrowser = ({ open, onOpenChange, onFileSelected }: GitHubBrow
       onFileSelected(content, name, selectedRepo);
       onOpenChange(false);
       toast({ title: 'تم إرفاق الملف', description: `${name} من ${selectedRepo}` });
-    } catch (error) {
+    } catch {
       toast({ title: 'خطأ', description: 'فشل قراءة الملف', variant: 'destructive' });
     } finally {
       setLoading(false);

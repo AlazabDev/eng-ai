@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { BarChart3, Sparkles, RefreshCw, Download, Save, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { MermaidChart } from '@/components/charts/MermaidChart';
 import { supabase } from '@/integrations/supabase/client';
+import { handleDatabaseError, getDatabaseErrorMessageAr } from '@/lib/error-handler';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { EmptyState } from '@/components/ui/empty-state';

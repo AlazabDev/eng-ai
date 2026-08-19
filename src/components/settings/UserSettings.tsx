@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Settings2, 
@@ -18,7 +17,6 @@ import {
   Download,
   Upload,
   RefreshCw,
-  CheckCircle,
   AlertCircle,
   Globe,
   Moon,
@@ -125,7 +123,7 @@ export const UserSettings = () => {
         title: "تم تصدير الإعدادات",
         description: "تم تنزيل ملف الإعدادات بنجاح"
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "خطأ في التصدير",
         description: "فشل في تصدير الإعدادات",
@@ -150,7 +148,7 @@ export const UserSettings = () => {
           title: "تم استيراد الإعدادات",
           description: "تم تطبيق الإعدادات المستوردة بنجاح"
         });
-      } catch (error) {
+      } catch {
         toast({
           title: "خطأ في الاستيراد",
           description: "ملف الإعدادات غير صحيح",

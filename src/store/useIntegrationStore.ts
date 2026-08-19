@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { integrationStorage } from '@/lib/integration-storage';
 
 export type IntegrationStatus = 'connected' | 'disconnected' | 'error' | 'testing';

@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   MessageSquare, FileText, Image, Video, Music, Search,
-  RefreshCw, Download, Brain, Phone, Calendar, Filter
+  RefreshCw, Download, Brain, Phone, Calendar
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -174,13 +174,13 @@ export default function WhatsApp() {
 
   const triggerAnalysis = async (messageId: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('whatsapp-analyze', {
+      const { error } = await supabase.functions.invoke('whatsapp-analyze', {
         body: { messageId },
       });
       if (error) throw error;
       toast({ title: 'تم بدء التحليل', description: 'جاري تحليل الرسالة بالذكاء الاصطناعي...' });
       setTimeout(fetchMessages, 3000);
-    } catch (error) {
+    } catch {
       toast({ title: 'خطأ', description: 'فشل في بدء التحليل', variant: 'destructive' });
     }
   };
