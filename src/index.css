@@ -22,15 +22,15 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 12%;
 
-    /* Brand palette: graphite, ivory, copper, and calm teal */
-    --primary: 186 62% 31%;
+    /* Corporate palette: navy #030957, gold #FFB900, light gray #D2D2D2 */
+    --primary: 236 93% 17%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 42 28% 95%;
-    --secondary-foreground: 210 20% 18%;
+    --secondary: 0 0% 82%;
+    --secondary-foreground: 236 93% 17%;
 
-    --accent: 28 72% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 44 100% 50%;
+    --accent-foreground: 236 93% 17%;
 
     /* Destructive */
     --destructive: 0 84% 60%;
@@ -39,7 +39,7 @@ All colors MUST be HSL.
     /* Borders & inputs */
     --border: 240 6% 90%;
     --input: 240 6% 95%;
-    --ring: 265 85% 55%;
+    --ring: 236 93% 17%;
 
     /* Radius */
     --radius: 0.5rem;
@@ -47,18 +47,18 @@ All colors MUST be HSL.
     /* Sidebar */
     --sidebar-background: 240 10% 98%;
     --sidebar-foreground: 240 10% 20%;
-    --sidebar-primary: 265 85% 55%;
+    --sidebar-primary: 236 93% 17%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 92%;
-    --sidebar-accent-foreground: 265 85% 55%;
-    --sidebar-border: 240 6% 90%;
-    --sidebar-ring: 265 85% 55%;
+    --sidebar-accent: 0 0% 82%;
+    --sidebar-accent-foreground: 236 93% 17%;
+    --sidebar-border: 0 0% 82%;
+    --sidebar-ring: 236 93% 17%;
 
-    /* Chat colors */
-    --chat-user: 265 85% 96%;
-    --chat-ai: 220 90% 96%;
-    --chat-user-text: 265 50% 35%;
-    --chat-ai-text: 220 50% 35%;
+    /* Chat surfaces: navy-tinted user state, quiet gray AI state */
+    --chat-user: 236 70% 96%;
+    --chat-ai: 0 0% 96%;
+    --chat-user-text: 236 93% 17%;
+    --chat-ai-text: 236 35% 28%;
   }
 
   .dark {
@@ -75,17 +75,15 @@ All colors MUST be HSL.
     --popover: 240 8% 15%;
     --popover-foreground: 0 0% 98%;
 
-    /* Primary - Bright purple */
-    --primary: 265 90% 65%;
-    --primary-foreground: 240 10% 10%;
+    /* Corporate dark surfaces preserve navy and restrained gold */
+    --primary: 236 88% 72%;
+    --primary-foreground: 236 93% 10%;
 
-    /* Secondary */
-    --secondary: 240 8% 22%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 24%;
+    --secondary-foreground: 0 0% 96%;
 
-    /* Accent - Bright blue */
-    --accent: 220 95% 65%;
-    --accent-foreground: 240 10% 10%;
+    --accent: 44 100% 50%;
+    --accent-foreground: 236 93% 10%;
 
     /* Destructive */
     --destructive: 0 84% 60%;
