@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User, FileText, Github, HardDrive, Settings, AlertCircle, Sparkles } from 'lucide-react';
+import { Send, Bot, User, FileText, Github, HardDrive, Settings, AlertCircle, Sparkles, BrainCircuit, ChevronDown, FolderKanban, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AIService, aiConfigManager } from '@/lib/ai-providers';
@@ -65,6 +65,9 @@ export const ChatInterface = () => {
   const { sessionId, setSession, bumpRefresh } = useChatSession();
   const [woodSpec, setWoodSpec] = useState<WoodUnitSpec | null>(null);
   const [showDesigner, setShowDesigner] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState('منسق المشاريع');
+  const [selectedModel, setSelectedModel] = useState('GPT-5.5');
+  const [projectContext, setProjectContext] = useState('برج العزب السكني · المرحلة 02');
 
   useEffect(() => {
     checkConfiguration();
@@ -183,7 +186,7 @@ export const ChatInterface = () => {
     if (currentFile) {
       const fileContext = `[ملف مرفق: ${currentFile.name}]\n\n--- محتوى الملف ---\n${currentFile.content}\n--- نهاية المحتوى ---`;
       if (userContent) userContent = `${userContent}\n\n${fileContext}`;
-      else { userContent = `حلل هذا الملف:\n\n${fileContext}`; displayContent = `📎 ${currentFile.name} - حلل هذا الملف`; }
+      else { userContent = `حلل هذا الملف:\n\n${fileContext}`; displayContent = `📎 ${currentFile.name} - حلل ه��ا الملف`; }
     }
 
     const userMessage: Message = {
@@ -206,8 +209,9 @@ export const ChatInterface = () => {
     try {
       const startTime = Date.now();
       const chatHistory = messages.slice(-5).map(msg => ({ role: msg.role, content: msg.content }));
+      const routedPrompt = `الوكيل المختار: ${selectedAgent}\nالنموذج المختار: ${selectedModel}\nسياق المشروع: ${projectContext}\n\n${userContent}`;
       const response = await aiService.sendMessage(
-        [...chatHistory, { role: 'user', content: userContent }],
+        [...chatHistory, { role: 'user', content: routedPrompt }],
         { temperature: prefs.temperature, maxTokens: prefs.maxTokens }
       );
       const responseTime = Date.now() - startTime;
@@ -260,11 +264,44 @@ export const ChatInterface = () => {
     <div className="flex h-screen bg-background w-full flex-col lg:flex-row">
       <div className="flex flex-col flex-1 min-w-0">
         {/* Modern Header */}
-        <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">المساعد الذكي</h1>
+        <header className="border-b border-border bg-card/90 px-5 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <BrainCircuit className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-semibold text-foreground">مركز العمل الذكي</h1>
+                <Badge variant="outline" className="hidden sm:inline-flex gap-1 text-[10px] font-normal"><ShieldCheck className="size-3" /> مؤسسي</Badge>
+              </div>
+              <p className="truncate text-xs text-muted-foreground">مساحة متعددة الوكلاء لمشروعات شركة العزب</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2 rounded-lg border border-border bg-secondary/60 px-3 py-1.5 text-xs">
+              <span className="text-muted-foreground">النموذج</span>
+              <select aria-label="اختيار النموذج" value={selectedModel} onChange={(event) => setSelectedModel(event.target.value)} className="max-w-20 bg-transparent font-medium text-foreground outline-none">
+                <option>GPT-5.5</option>
+                <option>GPT-5.1</option>
+                <option>Azure Auto</option>
+              </select>
+              <span className="mx-1 h-4 w-px bg-border" />
+              <span className="text-muted-foreground">الوكيل</span>
+              <select aria-label="اختيار الوكيل" value={selectedAgent} onChange={(event) => setSelectedAgent(event.target.value)} className="max-w-28 bg-transparent font-medium text-foreground outline-none">
+                <option>منسق المشاريع</option>
+                <option>المهندس المعماري</option>
+                <option>محلل المالية</option>
+                <option>مدير الصيانة</option>
+              </select>
+            </div>
+            <div className="hidden md:flex items-center gap-2 rounded-lg border border-border bg-secondary/60 px-3 py-1.5 text-xs">
+              <FolderKanban className="size-3.5 text-primary" />
+              <select aria-label="سياق المشروع" value={projectContext} onChange={(event) => setProjectContext(event.target.value)} className="bg-transparent font-medium text-foreground outline-none">
+                <option>برج العزب السكني · المرحلة 02</option>
+                <option>مبنى الإدارة · التشغيل</option>
+                <option>مشروع جديد</option>
+              </select>
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
@@ -400,7 +437,12 @@ export const ChatInterface = () => {
               <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) {
+                    event.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
                 placeholder={attachedFile ? "أضف تعليمات..." : "اكتب رسالتك..."}
                 dir="auto"
                 className="flex-1 border-0 focus-visible:ring-0 shadow-none bg-transparent resize-none text-sm py-3"

@@ -177,16 +177,16 @@ export const Sidebar = (): JSX.Element => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-40 lg:hidden p-2 hover:bg-secondary rounded-lg transition-colors"
+        className="fixed top-4 right-4 z-40 lg:hidden p-2 hover:bg-secondary rounded-lg transition-colors"
         aria-label="فتح القائمة"
       >
         {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
       <aside className={`
-        fixed lg:static top-0 left-0 h-screen w-64 bg-sidebar-background border-r border-sidebar-border
+        fixed lg:static top-0 right-0 h-screen w-72 bg-sidebar-background border-l border-sidebar-border
         transition-all duration-300 z-30
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
         flex flex-col
       `}>
         <div className="p-6 border-b border-sidebar-border">
